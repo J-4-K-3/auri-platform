@@ -1,0 +1,92 @@
+.storyring-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  height: fit-content;
+}
+
+.storyring-ring {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  animation: storyring-spin 8s linear infinite;
+}
+
+@keyframes storyring-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.storyring-plus {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  border-radius: 50%;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid var(--colors-card, #1E2336);
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive: Tablet and smaller */
+@media (max-width: 768px) {
+  .storyring-wrapper {
+    margin: 0 4px;
+  }
+
+  .storyring-plus {
+    padding: 5px;
+    border-width: 2px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Responsive: Mobile phones */
+@media (max-width: 480px) {
+  .storyring-wrapper {
+    margin: 0 3px;
+  }
+
+  .storyring-plus {
+    padding: 4px;
+    border-width: 1.5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+
+  .storyring-plus svg {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+/* Responsive: Very small screens */
+@media (max-width: 400px) {
+  .storyring-wrapper {
+    margin: 0 2px;
+  }
+
+  .storyring-plus {
+    padding: 3px;
+    border-width: 1px;
+  }
+
+  .storyring-plus svg {
+    width: 7px;
+    height: 7px;
+  }
+}
+
+
