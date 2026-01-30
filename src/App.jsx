@@ -20,7 +20,7 @@ export default function App() {
     // simulate boot logic (fonts, auth check, config, etc.)
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 2000); // adjust as needed
+    }, 7000); // adjust as needed
 
     return () => clearTimeout(timer);
   }, []);
