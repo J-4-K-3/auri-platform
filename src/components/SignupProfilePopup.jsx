@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { Input } from "./Input";
 import { Button } from "./Button";
 import { Chip } from "./Chip";
@@ -21,7 +22,7 @@ import './SignupProfilePopup.css'
 
 // Using Unsplash image instead of DEFAULT_AVATAR_URI
 const DEFAULT_AVATAR_URI =
-  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop";
+  "https://th.bing.com/th/id/R.d0265dd4448b9f25881dd3b7f27c890c?rik=uAfeyvD2eT0lcA&pid=ImgRaw&r=0";
 
 const interestOptions = [
   "Travel",
@@ -42,6 +43,7 @@ const interestOptions = [
 export const SignupProfilePopup = ({ isOpen, onClose, onComplete }) => {
   const theme = useAppTheme();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   
   // Get credentials from Redux store
   const { userId } = useSelector((state) => state.auth);
@@ -339,10 +341,13 @@ export const SignupProfilePopup = ({ isOpen, onClose, onComplete }) => {
         return;
       }
 
-      // Call onComplete callback
+      // Call onComplete callback and navigate to home
       if (onComplete) {
         onComplete();
       }
+      
+      // Navigate to home screen
+      navigate("/home", { replace: true });
     } catch (err) {
       console.error("Signup profile error", err);
       const friendly = typeof err?.message === "string"
