@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useCallback } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { store, persistor } from "./store";
-import { loginSuccess } from "./store/slices/authSlice";
+import { persistor } from "./store";
+import { loginSuccess, logout } from "./store/slices/authSlice";
 import { getCurrentUser } from "./lib/Auth";
 import { SplashScreen } from "../src/screen/splash/SplashScreen";
 import { AuthFlow } from "../src/screen/onboarding/OnboardingScreen";
@@ -20,75 +20,78 @@ import './App.css'
 
 function AppContent() {
   const [loading, setLoading] = useState(true);
-  const [authChecked, setAuthChecked] = useState(false);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { isAuthenticated, userId } = useSelector((state) => state.auth);
+  const { isAuthenticated, userId, onboardingDone } = useSelector((state) => state.auth);
 
+  // Check auth on initial load only
   useEffect(() => {
-    // Check for existing session on app load
+    let isMounted = true;
+
     const checkAuth = async () => {
       try {
         const user = await getCurrentUser();
-        if (user?.$id) {
-          // User is logged in, update Redux state
+        if (isMounted && user?.$id) {
           dispatch(loginSuccess({ userId: user.$id }));
-          // Navigate to home
-          navigate("/home", { replace: true });
         }
       } catch (error) {
-        // No active session or session expired - stay on auth
-        console.log("No active session:", error.message);
+        // No active session - user needs to log in
+        if (isMounted) {
+          dispatch(logout());
+        }
       } finally {
-        setAuthChecked(true);
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     checkAuth();
-  }, [dispatch, navigate]);
 
-  // Don't render routes until we've checked auth
+    return () => {
+      isMounted = false;
+    };
+  }, [dispatch]);
+
+  // Don't show splash screen after initial load
   if (loading) {
     return <SplashScreen />;
   }
 
-  // Determine redirect destination based on auth state
-  const redirectTo = isAuthenticated && userId ? "/home" : "/auth";
+  // If not authenticated, show auth flow
+  if (!isAuthenticated || !userId) {
+    return (
+      <Routes>
+        <Route path="/auth/*" element={<AuthFlow />} />
+        <Route path="*" element={<Navigate to="/auth" replace />} />
+      </Routes>
+    );
+  }
 
+  // If authenticated but onboarding not done, redirect to onboarding
+  if (!onboardingDone) {
+    return (
+      <Routes>
+        <Route path="/auth/onboarding" element={<AuthFlow />} />
+        <Route path="*" element={<Navigate to="/auth/onboarding" replace />} />
+      </Routes>
+    );
+  }
+
+  // Authenticated and onboarding done - show main app
   return (
-    <Routes>
-      {/* Auth flow */}
-      <Route path="/auth/*" element={<AuthFlow />} />
-
-      {/* Main App Layout with Floating Nav */}
-      <Route
-        path="/*"
-        element={
-          isAuthenticated && userId ? (
-            <MainLayout>
-              <Routes>
-                <Route path="/" element={<HomeScreen />} />
-                <Route path="/home" element={<HomeScreen />} />
-                <Route path="/reels" element={<ReelsScreen />} />
-                <Route path="/moments" element={<MomentsScreen />} />
-                <Route path="/chat" element={<ChatsScreen />} />
-                <Route path="/profile" element={<ProfileScreen />} />
-                {/* Public shareable routes */}
-                <Route path="/u/:userId" element={<PublicProfileScreen />} />
-                <Route path="/p/:postId" element={<PublicPostScreen />} />
-              </Routes>
-            </MainLayout>
-          ) : (
-            // Not authenticated, redirect to auth
-            <Navigate to="/auth" replace />
-          )
-        }
-      />
-
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to={redirectTo} replace />} />
-    </Routes>
+    <MainLayout>
+      <Routes>
+        <Route path="/" element={<HomeScreen />} />
+        <Route path="/home" element={<HomeScreen />} />
+        <Route path="/reels" element={<ReelsScreen />} />
+        <Route path="/moments" element={<MomentsScreen />} />
+        <Route path="/chat" element={<ChatsScreen />} />
+        <Route path="/profile" element={<ProfileScreen />} />
+        {/* Public shareable routes */}
+        <Route path="/u/:userId" element={<PublicProfileScreen />} />
+        <Route path="/p/:postId" element={<PublicPostScreen />} />
+      </Routes>
+    </MainLayout>
   );
 }
 
