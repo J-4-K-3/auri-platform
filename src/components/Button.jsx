@@ -38,7 +38,7 @@ export const Button = ({
           fontSize: 14,
         }}
         >
-          Laoding...
+          Loading...
         </p>
       ) : (
         <>
