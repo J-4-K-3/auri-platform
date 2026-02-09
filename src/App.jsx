@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistor } from "./store";
-import { loginSuccess, logout } from "./store/slices/authSlice";
+import { loginSuccess } from "./store/slices/authSlice";
 import { getCurrentUser } from "./lib/Auth";
 import { SplashScreen } from "../src/screen/splash/SplashScreen";
 import { AuthFlow } from "../src/screen/onboarding/OnboardingScreen";
@@ -19,43 +19,35 @@ import { useAppTheme } from './theme';
 import './App.css'
 
 function AppContent() {
-  const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
-  const { isAuthenticated, userId, onboardingDone } = useSelector((state) => state.auth);
+  const { isAuthenticated, userId } = useSelector((state) => state.auth);
 
-  // Check auth on initial load only
+  // Check for existing Appwrite session on mount to restore auth state
   useEffect(() => {
     let isMounted = true;
 
-    const checkAuth = async () => {
+    const checkAndRestoreAuth = async () => {
+      // If already authenticated via persisted state, skip
+      if (isMounted && isAuthenticated && userId) {
+        return;
+      }
+
       try {
         const user = await getCurrentUser();
         if (isMounted && user?.$id) {
           dispatch(loginSuccess({ userId: user.$id }));
         }
       } catch (error) {
-        // No active session - user needs to log in
-        if (isMounted) {
-          dispatch(logout());
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        // No active session - that's fine, rely on persisted state
       }
     };
 
-    checkAuth();
+    checkAndRestoreAuth();
 
     return () => {
       isMounted = false;
     };
-  }, [dispatch]);
-
-  // Don't show splash screen after initial load
-  if (loading) {
-    return <SplashScreen />;
-  }
+  }, [dispatch, isAuthenticated, userId]);
 
   // If not authenticated, show auth flow
   if (!isAuthenticated || !userId) {
@@ -67,17 +59,7 @@ function AppContent() {
     );
   }
 
-  // If authenticated but onboarding not done, redirect to onboarding
-  if (!onboardingDone) {
-    return (
-      <Routes>
-        <Route path="/auth/onboarding" element={<AuthFlow />} />
-        <Route path="*" element={<Navigate to="/auth/onboarding" replace />} />
-      </Routes>
-    );
-  }
-
-  // Authenticated and onboarding done - show main app
+  // Authenticated - show main app
   return (
     <MainLayout>
       <Routes>
