@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
+import { store, persistor } from "./store";
+import { loginSuccess } from "./store/slices/authSlice";
+import { getCurrentUser } from "./lib/Auth";
 import { SplashScreen } from "../src/screen/splash/SplashScreen";
 import { AuthFlow } from "../src/screen/onboarding/OnboardingScreen";
 import HomeScreen from "../src/screen/home/HomeScreen";
@@ -13,26 +18,46 @@ import { FloatingNav } from "../src/components/FloatingNav";
 import { useAppTheme } from './theme';
 import './App.css'
 
-export default function App() {
+function AppContent() {
   const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { isAuthenticated, userId } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    // simulate boot logic (fonts, auth check, config, etc.)
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 7000); // adjust as needed
+    // Check for existing session on app load
+    const checkAuth = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (user?.$id) {
+          // User is logged in, update Redux state
+          dispatch(loginSuccess({ userId: user.$id }));
+          // Navigate to home
+          navigate("/home", { replace: true });
+        }
+      } catch (error) {
+        // No active session or session expired - stay on auth
+        console.log("No active session:", error.message);
+      } finally {
+        setAuthChecked(true);
+        setLoading(false);
+      }
+    };
 
-    return () => clearTimeout(timer);
-  }, []);
+    checkAuth();
+  }, [dispatch, navigate]);
+
+  // Don't render routes until we've checked auth
+  if (loading) {
+    return <SplashScreen />;
+  }
+
+  // Determine redirect destination based on auth state
+  const redirectTo = isAuthenticated && userId ? "/home" : "/auth";
 
   return (
     <Routes>
-      {/* Splash / Loading */}
-      <Route
-        path="/"
-        element={loading ? <SplashScreen /> : <Navigate to="/auth" replace />}
-      />
-
       {/* Auth flow */}
       <Route path="/auth/*" element={<AuthFlow />} />
 
@@ -40,25 +65,38 @@ export default function App() {
       <Route
         path="/*"
         element={
-          <MainLayout>
-            <Routes>
-              <Route path="/" element={<HomeScreen />} />
-              <Route path="/home" element={<HomeScreen />} />
-              <Route path="/reels" element={<ReelsScreen />} />
-              <Route path="/moments" element={<MomentsScreen />} />
-              <Route path="/chat" element={<ChatsScreen />} />
-              <Route path="/profile" element={<ProfileScreen />} />
-              {/* Public shareable routes */}
-              <Route path="/u/:userId" element={<PublicProfileScreen />} />
-              <Route path="/p/:postId" element={<PublicPostScreen />} />
-            </Routes>
-          </MainLayout>
+          isAuthenticated && userId ? (
+            <MainLayout>
+              <Routes>
+                <Route path="/" element={<HomeScreen />} />
+                <Route path="/home" element={<HomeScreen />} />
+                <Route path="/reels" element={<ReelsScreen />} />
+                <Route path="/moments" element={<MomentsScreen />} />
+                <Route path="/chat" element={<ChatsScreen />} />
+                <Route path="/profile" element={<ProfileScreen />} />
+                {/* Public shareable routes */}
+                <Route path="/u/:userId" element={<PublicProfileScreen />} />
+                <Route path="/p/:postId" element={<PublicPostScreen />} />
+              </Routes>
+            </MainLayout>
+          ) : (
+            // Not authenticated, redirect to auth
+            <Navigate to="/auth" replace />
+          )
         }
       />
 
       {/* Fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to={redirectTo} replace />} />
     </Routes>
+  );
+}
+
+export default function App() {
+  return (
+    <PersistGate loading={<SplashScreen />} persistor={persistor}>
+      <AppContent />
+    </PersistGate>
   );
 }
 
