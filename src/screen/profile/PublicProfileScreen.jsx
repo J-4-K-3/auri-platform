@@ -5,17 +5,28 @@ import {
   FiArrowLeft,
   FiMapPin,
   FiShare2,
+  FiUserPlus,
+  FiCheck,
+  FiGift,
+  FiMessageCircle,
+  FiGrid,
+  FiFilm,
+  FiUsers,
+  FiImage,
+  FiPlay,
 } from "react-icons/fi";
+import { MdVerified } from "react-icons/md";
 import { Avatar } from "../../components/Avatar";
 import { Chip } from "../../components/Chip";
 import { Button } from "../../components/Button";
 import { useAppTheme } from "../../theme";
-import { spacing, colors } from "../../theme/tokens";
-import { getUserById } from "../../lib/usersApi";
+import { spacing, colors, radii } from "../../theme/tokens";
+import { getUserById, followUser } from "../../lib/usersApi";
 import { getPostsByUser } from "../../lib/postsApi";
 import { listReels, mapReelDocument } from "../../lib/reelsApi";
 import { upsertUser } from "../../store/slices/usersSlice";
 import { hydratePosts } from "../../store/slices/postsSlice";
+import { createNotification } from "../../lib/notificationsApi";
 import {
   databases,
   APPWRITE_DATABASE_ID,
@@ -62,6 +73,9 @@ export const PublicProfileScreen = () => {
   const navigate = useNavigate();
   const { userId } = useParams();
 
+  // Get auth user info
+  const authUserId = useSelector((state) => state.auth.userId);
+  const currentUser = useSelector((state) => state.users.byId[authUserId]);
   const viewedUser = useSelector((state) => state.users.byId[userId]);
   const postsState = useSelector((state) => state.posts);
 
@@ -70,6 +84,29 @@ export const PublicProfileScreen = () => {
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [loadingReels, setLoadingReels] = useState(false);
   const [userReels, setUserReels] = useState([]);
+  const [followPending, setFollowPending] = useState(false);
+
+  // This is always another user's profile (public profile view)
+  const isOwnProfile = false;
+
+  // Tabs - no Saved for other users
+  const TABS = useMemo(() => [
+    { key: "media", label: "Media", icon: "grid" },
+    { key: "reels", label: "Reels", icon: "film" },
+    { key: "connections", label: "Connections", icon: "users" },
+  ], []);
+
+  // Check if current user is following this user
+  const isFollowing = useMemo(() => {
+    if (!currentUser || !userId) return false;
+    return currentUser.following?.includes(userId) ?? false;
+  }, [currentUser, userId]);
+
+  // Check if donation is enabled for this user
+  const donateEnabled = useMemo(() => {
+    const raw = viewedUser?.links?.donation;
+    return typeof raw === "string" && raw.trim().length > 0;
+  }, [viewedUser?.links?.donation]);
 
   // Hydrate profile data
   useEffect(() => {
@@ -260,6 +297,82 @@ export const PublicProfileScreen = () => {
     }
   }, [userId, displayUser.name]);
 
+  // Follow toggle handler - similar to mobile version and SearchSidebarContent
+  const handleFollowToggle = useCallback(async () => {
+    if (followPending || !authUserId || !userId) {
+      return;
+    }
+
+    try {
+      setFollowPending(true);
+      const result = await followUser(authUserId, userId);
+
+      const nextFollowing = result?.following ?? currentUser?.following;
+      const nextFollowers = result?.followers ?? viewedUser?.followers;
+
+      if (currentUser) {
+        dispatch(
+          upsertUser({
+            ...currentUser,
+            id: currentUser.id ?? authUserId,
+            following: nextFollowing,
+          }),
+        );
+      }
+
+      if (viewedUser) {
+        dispatch(
+          upsertUser({
+            ...viewedUser,
+            id: viewedUser.id ?? userId,
+            followers: nextFollowers,
+          }),
+        );
+      }
+
+      // Create follow notification
+      if (authUserId !== userId) {
+        try {
+          await createNotification({
+            toUserId: userId,
+            actorId: authUserId,
+            type: "follow",
+          });
+        } catch (error) {
+          console.warn("Failed to create follow notification", error);
+        }
+      }
+    } catch (error) {
+      console.warn("Follow toggle failed", error);
+    } finally {
+      setFollowPending(false);
+    }
+  }, [authUserId, currentUser, viewedUser, userId, dispatch, followPending]);
+
+  // Donate handler - opens donation link
+  const handleDonatePress = useCallback(() => {
+    if (!viewedUser?.links?.donation) {
+      alert("This person hasn't added a donation link yet.");
+      return;
+    }
+
+    window.open(viewedUser.links.donation, "_blank");
+
+    // Create donate notification
+    if (authUserId && userId && authUserId !== userId) {
+      createNotification({
+        toUserId: userId,
+        actorId: authUserId,
+        type: "donate",
+      }).catch(() => undefined);
+    }
+  }, [authUserId, userId, viewedUser]);
+
+  // Message handler - placeholder for now
+  const handleMessagePress = useCallback(() => {
+    alert("Direct messaging will be available soon.");
+  }, []);
+
   const renderPlaceholder = useCallback(
     (icon, label) => (
       <div className="profile-placeholder" style={{ color: theme.subText }}>
@@ -340,6 +453,14 @@ export const PublicProfileScreen = () => {
       );
     }
 
+    // Connections tab
+    if (activeTab === "connections") {
+      return renderPlaceholder(
+        <FiUsers size={36} />,
+        "Connections will appear here"
+      );
+    }
+
     return null;
   }, [
     activeTab,
@@ -392,8 +513,9 @@ export const PublicProfileScreen = () => {
             </div>
           )}
 
-          <h1 className="profile-name" style={{ color: theme.text }}>
+          <h1 className="profile-name" style={{ color: theme.text, display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}>
             {displayUser.name}
+            {displayUser.verified && <MdVerified size={24} color="#FF8A65" />}
           </h1>
 
           {displayUser.location && (
@@ -460,6 +582,96 @@ export const PublicProfileScreen = () => {
               ))}
             </div>
           )}
+
+          {/* Action Buttons Row - For Other Users */}
+          <div className="profile-buttons-row" style={{
+            display: "flex",
+            justifyContent: "center",
+            flexWrap: "wrap",
+            gap: spacing.md,
+            marginTop: spacing.lg,
+            marginBottom: spacing.lg,
+          }}>
+            {/* Follow Button */}
+            <button
+              className="profile-button"
+              onClick={handleFollowToggle}
+              disabled={followPending || loadingProfile}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: spacing.sm,
+                padding: "12px 24px",
+                borderRadius: 24,
+                border: `1px solid ${theme.border}`,
+                backgroundColor: isFollowing ? "transparent" : colors.peach,
+                color: isFollowing ? theme.text : colors.white,
+                cursor: "pointer",
+                fontSize: 14,
+                fontWeight: 600,
+                minWidth: 140,
+                opacity: (followPending || loadingProfile) ? 0.6 : 1,
+              }}
+            >
+              {isFollowing ? <FiCheck size={18} /> : <FiUserPlus size={18} />}
+              <span>
+                {followPending || loadingProfile
+                  ? "Updating..."
+                  : isFollowing
+                    ? "Following"
+                    : "Follow"}
+              </span>
+            </button>
+
+            {/* Donate Button */}
+            <button
+              className="profile-button"
+              onClick={handleDonatePress}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: spacing.sm,
+                padding: "12px 24px",
+                borderRadius: 24,
+                border: `1px solid ${theme.border}`,
+                backgroundColor: donateEnabled ? colors.peach : "transparent",
+                color: donateEnabled ? colors.white : theme.text,
+                cursor: "pointer",
+                fontSize: 14,
+                fontWeight: 600,
+                minWidth: 140,
+              }}
+            >
+              <FiGift size={18} />
+              <span>Donate</span>
+            </button>
+
+            {/* Message Button */}
+            <button
+              className="profile-button"
+              onClick={handleMessagePress}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: spacing.sm,
+                padding: "12px 24px",
+                borderRadius: 24,
+                border: `1px solid ${theme.border}`,
+                backgroundColor: "transparent",
+                color: theme.text,
+                cursor: "pointer",
+                fontSize: 14,
+                fontWeight: 600,
+                minWidth: 140,
+              }}
+            >
+              <FiMessageCircle size={18} />
+              <span>Message</span>
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}

@@ -25,8 +25,16 @@ import {
   FiBookmark,
   FiUsers,
   FiPlay,
+  FiZap,
+  FiSmartphone,
+  FiTool,
+  FiEdit3,
+  FiExternalLink,
+  FiBellOff,
+  FiCamera,
 } from "react-icons/fi";
-import { MdVerified } from "react-icons/md"
+import { MdVerified } from "react-icons/md";
+import { AiOutlineQrcode } from "react-icons/ai";
 import {
   databases,
   storage,
@@ -71,8 +79,14 @@ import {
   markNotificationReadRemote,
   markNotificationsReadBulk,
 } from "../../lib/notificationsApi";
+import {
+  PreferencesPopup,
+  RewardVoucherPopup,
+  BecomeSellerPopup,
+  DigitalCategoryPopup,
+} from "../../popup/ShopPopups";
 
-// Mock users data (move from HomeScreen if needed, but since shared, keep)
+// Mock users data
 const DEFAULT_AVATAR =
   "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg";
 
@@ -449,8 +463,15 @@ const CreateSidebarContent = ({ theme, onClose }) => {
         <h2 className="homescreen-create-title" style={{ color: theme.text }}>
           Create
         </h2>
-        <div className="homescreen-create-spacer" />
+        <button
+          className="homescreen-create-back-btn"
+          style={{ opacity: 0.65 }}
+        >
+          <FiCamera size={18} color={theme.text} />
+        </button>
       </div>
+
+      {/* <div className="homescreen-create-spacer" /> */}
 
       <div className="homescreen-create-content">
         <div className="homescreen-create-segmented">
@@ -1026,6 +1047,7 @@ export const SearchSidebarContent = ({ theme, onUserPress, onClose }) => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                marginLeft: 10,
               }}
             >
               <FiArrowLeft size={18} color={theme.text} />
@@ -1034,9 +1056,43 @@ export const SearchSidebarContent = ({ theme, onUserPress, onClose }) => {
               className="homescreen-profile-title"
               style={{ color: theme.text, fontSize: 18, fontWeight: 700 }}
             >
-              Profile
+              {/*Profile*/}
             </h2>
-            <div style={{ width: 34 }} />
+            <div style={{ display: "flex", flexDirection: "row", gap: 5, alignItems: 'center' }}>
+              <button
+                className="homescreen-profile-back-btn"
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  border: `1px solid ${theme.border}`,
+                  backgroundColor: "transparent",
+                  cursor: "not-allowed",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <AiOutlineQrcode size={18} color={theme.text} />
+              </button>
+              <button
+                className="homescreen-profile-back-btn"
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  border: `1px solid ${theme.border}`,
+                  backgroundColor: "transparent",
+                  cursor: "not-allowed",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginRight: 10,
+                }}
+              >
+                <FiUsers size={18} color={theme.text} />
+              </button>
+            </div>
           </div>
 
           {/* Scrollable profile content */}
@@ -1054,443 +1110,461 @@ export const SearchSidebarContent = ({ theme, onUserPress, onClose }) => {
                 display: none;
               }
             `}</style>
-          {profileLoading ? (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                gap: spacing.sm,
-                padding: spacing.xl,
-                justifyContent: "center",
-              }}
-            >
-              <FiLoader
-                size={24}
-                color={theme.subText}
-                style={{ animation: "spin 1s linear infinite" }}
-              />
-              <span style={{ color: theme.subText, fontSize: 14 }}>
-                Loading profile...
-              </span>
-            </div>
-          ) : (
-            <>
-              {/* Avatar */}
+            {profileLoading ? (
               <div
                 style={{
                   display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: spacing.sm,
+                  padding: spacing.xl,
                   justifyContent: "center",
-                  marginBottom: spacing.md,
                 }}
               >
-                <Avatar uri={displayProfile.avatarUri} size={80} />
+                <FiLoader
+                  size={24}
+                  color={theme.subText}
+                  style={{ animation: "spin 1s linear infinite" }}
+                />
+                <span style={{ color: theme.subText, fontSize: 14 }}>
+                  Loading profile...
+                </span>
               </div>
-
-              {/* Name */}
-              <h3
-                style={{
-                  color: theme.text,
-                  fontSize: 20,
-                  fontWeight: 700,
-                  justifyContent: "center",
-                  alignItems: 'center',
-                  display: 'flex',
-                  gap: 10,
-                  marginBottom: spacing.xs,
-                }}
-              >
-                {displayProfile.name ?? "Auri Friend"} {displayProfile.verified && <MdVerified size={24} color="#FF8A65" />}
-              </h3>
-
-              {/* Location */}
-              {displayProfile.location && (
-                <p
-                  style={{
-                    color: theme.subText,
-                    fontSize: 14,
-                    textAlign: "center",
-                    marginBottom: spacing.sm,
-                  }}
-                >
-                  {displayProfile.location}
-                </p>
-              )}
-
-              {/* Status */}
-              {displayProfile.status && (
-                <p
-                  style={{
-                    color: theme.subText,
-                    fontSize: 14,
-                    textAlign: "center",
-                    marginBottom: spacing.md,
-                    fontStyle: "italic",
-                  }}
-                >
-                  {displayProfile.status}
-                </p>
-              )}
-
-              {/* Bio */}
-              {displayProfile.bio && (
-                <p
-                  style={{
-                    color: theme.text,
-                    fontSize: 14,
-                    textAlign: "center",
-                    marginBottom: spacing.lg,
-                    paddingHorizontal: spacing.md,
-                  }}
-                >
-                  {displayProfile.bio}
-                </p>
-              )}
-
-              {/* Stats Row */}
-              <div
-                className="homescreen-profile-stats-row"
-                style={{
-                  display: "flex",
-                  justifyContent: "space-evenly",
-                  gap: spacing.xl,
-                  marginTop: spacing.xxl,
-                  marginBottom: spacing.xxl,
-                  paddingVertical: spacing.md,
-                }}
-              >
+            ) : (
+              <>
+                {/* Avatar */}
                 <div
-                  className="homescreen-profile-stat-item"
-                  style={{ textAlign: "center" }}
-                >
-                  <p
-                    className="homescreen-profile-stat-value"
-                    style={{ color: theme.text, fontSize: 18, fontWeight: 700 }}
-                  >
-                    {formatCount(displayProfile.posts || 0)}
-                  </p>
-                  <p
-                    className="homescreen-profile-stat-label"
-                    style={{ color: theme.subText, fontSize: 12 }}
-                  >
-                    Posts
-                  </p>
-                </div>
-                <div
-                  className="homescreen-profile-stat-item"
-                  style={{ textAlign: "center" }}
-                >
-                  <p
-                    className="homescreen-profile-stat-value"
-                    style={{ color: theme.text, fontSize: 18, fontWeight: 700 }}
-                  >
-                    {formatCount(displayProfile.followers?.length || 0)}
-                  </p>
-                  <p
-                    className="homescreen-profile-stat-label"
-                    style={{ color: theme.subText, fontSize: 12 }}
-                  >
-                    Followers
-                  </p>
-                </div>
-                <div
-                  className="homescreen-profile-stat-item"
-                  style={{ textAlign: "center" }}
-                >
-                  <p
-                    className="homescreen-profile-stat-value"
-                    style={{ color: theme.text, fontSize: 18, fontWeight: 700 }}
-                  >
-                    {formatCount(displayProfile.following?.length || 0)}
-                  </p>
-                  <p
-                    className="homescreen-profile-stat-label"
-                    style={{ color: theme.subText, fontSize: 12 }}
-                  >
-                    Following
-                  </p>
-                </div>
-              </div>
-
-              {/* Interests */}
-              {displayProfile.interests?.length > 0 && (
-                <div
-                  className="homescreen-profile-interests"
                   style={{
                     display: "flex",
-                    flexWrap: "wrap",
-                    gap: spacing.sm,
                     justifyContent: "center",
-                    paddingHorizontal: spacing.md,
+                    marginBottom: spacing.md,
                   }}
                 >
-                  {displayProfile.interests.map((interest) => (
-                    <div
-                      key={interest}
-                      style={{
-                        backgroundColor: theme.border,
-                        borderRadius: 16,
-                        padding: 12,
-                        fontSize: 12,
-                        color: theme.text,
-                        marginBottom: spacing.xs,
-                      }}
-                    >
-                      <span style={{ color: theme.text, fontSize: 12 }}>
-                        {interest}
-                      </span>
-                    </div>
-                  ))}
-                  {/* Action Buttons Row */}
-                  <div
-                    className="homescreen-profile-buttons-row"
+                  <Avatar uri={displayProfile.avatarUri} size={80} />
+                </div>
+
+                {/* Name */}
+                <h3
+                  style={{
+                    color: theme.text,
+                    fontSize: 20,
+                    fontWeight: 700,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    display: "flex",
+                    gap: 10,
+                    marginBottom: spacing.xs,
+                  }}
+                >
+                  {displayProfile.name ?? "Auri Friend"}{" "}
+                  {displayProfile.verified && (
+                    <MdVerified size={24} color="#FF8A65" />
+                  )}
+                </h3>
+
+                {/* Location */}
+                {displayProfile.location && (
+                  <p
                     style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      flexWrap: "wrap",
-                      gap: spacing.md,
-                      marginTop: spacing.lg,
+                      color: theme.subText,
+                      fontSize: 14,
+                      textAlign: "center",
+                      marginBottom: spacing.sm,
+                    }}
+                  >
+                    {displayProfile.location}
+                  </p>
+                )}
+
+                {/* Status */}
+                {displayProfile.status && (
+                  <p
+                    style={{
+                      color: theme.subText,
+                      fontSize: 14,
+                      textAlign: "center",
+                      marginBottom: spacing.md,
+                      fontStyle: "italic",
+                    }}
+                  >
+                    {displayProfile.status}
+                  </p>
+                )}
+
+                {/* Bio */}
+                {displayProfile.bio && (
+                  <p
+                    style={{
+                      color: theme.text,
+                      fontSize: 14,
+                      textAlign: "center",
                       marginBottom: spacing.lg,
+                      paddingHorizontal: spacing.md,
                     }}
                   >
-                    <button
-                      className="homescreen-profile-button"
-                      onClick={handleFollowToggle}
-                      disabled={followPending || profileLoading}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: spacing.sm,
-                        padding: 12,
-                        borderRadius: radii.pill,
-                        border: `1px solid ${theme.border}`,
-                        backgroundColor: isFollowing
-                          ? "transparent"
-                          : colors.peach,
-                        color: isFollowing ? theme.text : colors.white,
-                        cursor: "pointer",
-                        fontSize: 14,
-                        fontWeight: 600,
-                        minWidth: 140,
-                        opacity: followPending || profileLoading ? 0.6 : 1,
-                      }}
-                    >
-                      {isFollowing ? (
-                        <FiCheck size={18} />
-                      ) : (
-                        <FiUserPlus size={18} />
-                      )}
-                      <span>
-                        {followPending || profileLoading
-                          ? "Updating..."
-                          : isFollowing
-                            ? "Following"
-                            : "Follow"}
-                      </span>
-                    </button>
+                    {displayProfile.bio}
+                  </p>
+                )}
 
-                    <button
-                      className="homescreen-profile-button"
-                      onClick={handleDonatePress}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: spacing.sm,
-                        padding: 12,
-                        borderRadius: radii.pill,
-                        border: `1px solid ${theme.border}`,
-                        backgroundColor: donateEnabled
-                          ? colors.peach
-                          : "transparent",
-                        color: donateEnabled ? colors.white : theme.text,
-                        cursor: "pointer",
-                        fontSize: 14,
-                        fontWeight: 600,
-                        minWidth: 140,
-                      }}
-                    >
-                      <FiGift size={18} />
-                      <span>Donate</span>
-                    </button>
-
-                    <button
-                      className="homescreen-profile-button"
-                      onClick={handleMessagePress}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: spacing.sm,
-                        padding: 12,
-                        borderRadius: radii.pill,
-                        border: `1px solid ${theme.border}`,
-                        backgroundColor: "transparent",
-                        color: theme.text,
-                        cursor: "pointer",
-                        fontSize: 14,
-                        fontWeight: 600,
-                        minWidth: 140,
-                      }}
-                    >
-                      <FiMessageCircle size={18} />
-                      <span>Message</span>
-                    </button>
-                  </div>
-                  {/* Tabs Row */}
+                {/* Stats Row */}
+                <div
+                  className="homescreen-profile-stats-row"
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-evenly",
+                    gap: spacing.xl,
+                    marginTop: spacing.xxl,
+                    marginBottom: spacing.xxl,
+                    paddingVertical: spacing.md,
+                  }}
+                >
                   <div
-                    className="homescreen-profile-tabs-row"
-                    style={{
-                      display: "flex",
-                      alignItems: 'center',
-                      gap: spacing.xxl,
-                      marginTop: spacing.md,
-                      borderBottomWidth: 1,
-                      borderBottomColor: theme.border,
-                      borderBottomStyle: "solid",
-                    }}
+                    className="homescreen-profile-stat-item"
+                    style={{ textAlign: "center" }}
                   >
-                    {TABS.map((tab) => {
-                      const focused = tab.key === activeTab;
-                      return (
-                        <button
-                          key={tab.key}
-                          className="homescreen-profile-tab-btn"
-                          onClick={() => setActiveTab(tab.key)}
-                          style={{
-                            flex: 1,
-                            alignItems: "center",
-                            paddingVertical: spacing.sm,
-                            cursor: "pointer",
-                            backgroundColor: "transparent",
-                            border: "none",
-                          }}
-                        >
-                          <span
-                            style={{
-                              color: focused ? theme.text : theme.subText,
-                              fontSize: 13,
-                              fontWeight: 600,
-                            }}
-                          >
-                            {tab.label}
-                          </span>
-                          {focused && (
-                            <div
-                              style={{
-                                height: 3,
-                                width: 32,
-                                borderRadius: 2,
-                                backgroundColor: colors.peach,
-                                marginTop: spacing.xs,
-                              }}
-                            />
-                          )}
-                        </button>
-                      );
-                    })}
+                    <p
+                      className="homescreen-profile-stat-value"
+                      style={{
+                        color: theme.text,
+                        fontSize: 18,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {formatCount(displayProfile.posts || 0)}
+                    </p>
+                    <p
+                      className="homescreen-profile-stat-label"
+                      style={{ color: theme.subText, fontSize: 12 }}
+                    >
+                      Posts
+                    </p>
+                  </div>
+                  <div
+                    className="homescreen-profile-stat-item"
+                    style={{ textAlign: "center" }}
+                  >
+                    <p
+                      className="homescreen-profile-stat-value"
+                      style={{
+                        color: theme.text,
+                        fontSize: 18,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {formatCount(displayProfile.followers?.length || 0)}
+                    </p>
+                    <p
+                      className="homescreen-profile-stat-label"
+                      style={{ color: theme.subText, fontSize: 12 }}
+                    >
+                      Followers
+                    </p>
+                  </div>
+                  <div
+                    className="homescreen-profile-stat-item"
+                    style={{ textAlign: "center" }}
+                  >
+                    <p
+                      className="homescreen-profile-stat-value"
+                      style={{
+                        color: theme.text,
+                        fontSize: 18,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {formatCount(displayProfile.following?.length || 0)}
+                    </p>
+                    <p
+                      className="homescreen-profile-stat-label"
+                      style={{ color: theme.subText, fontSize: 12 }}
+                    >
+                      Following
+                    </p>
                   </div>
                 </div>
-              )}
-              {/* Content Area */}
-              <div
-                className="homescreen-profile-content"
-                style={{
-                  flex: 1,
-                  paddingTop: spacing.lg,
-                }}
-              >
-                {activeTab === "media" && (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      padding: spacing.xl,
-                    }}
-                  >
-                    <FiGrid size={36} color={theme.subText} />
-                    <p
-                      style={{
-                        color: theme.subText,
-                        fontSize: 14,
-                        marginTop: spacing.md,
-                      }}
-                    >
-                      Media content will appear here
-                    </p>
-                  </div>
-                )}
 
-                {activeTab === "reels" && (
+                {/* Interests */}
+                {displayProfile.interests?.length > 0 && (
                   <div
+                    className="homescreen-profile-interests"
                     style={{
                       display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      padding: spacing.xl,
+                      flexWrap: "wrap",
+                      gap: spacing.sm,
+                      justifyContent: "center",
+                      paddingHorizontal: spacing.md,
                     }}
                   >
-                    <FiFilm size={36} color={theme.subText} />
-                    <p
+                    {displayProfile.interests.map((interest) => (
+                      <div
+                        key={interest}
+                        style={{
+                          backgroundColor: theme.border,
+                          borderRadius: 16,
+                          padding: 12,
+                          fontSize: 12,
+                          color: theme.text,
+                          marginBottom: spacing.xs,
+                        }}
+                      >
+                        <span style={{ color: theme.text, fontSize: 12 }}>
+                          {interest}
+                        </span>
+                      </div>
+                    ))}
+                    {/* Action Buttons Row */}
+                    <div
+                      className="homescreen-profile-buttons-row"
                       style={{
-                        color: theme.subText,
-                        fontSize: 14,
-                        marginTop: spacing.md,
+                        display: "flex",
+                        justifyContent: "center",
+                        flexWrap: "wrap",
+                        gap: spacing.md,
+                        marginTop: spacing.lg,
+                        marginBottom: spacing.lg,
                       }}
                     >
-                      Reels will appear here
-                    </p>
-                  </div>
-                )}
+                      <button
+                        className="homescreen-profile-button"
+                        onClick={handleFollowToggle}
+                        disabled={followPending || profileLoading}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: spacing.sm,
+                          padding: 12,
+                          borderRadius: radii.pill,
+                          border: `1px solid ${theme.border}`,
+                          backgroundColor: isFollowing
+                            ? "transparent"
+                            : colors.peach,
+                          color: isFollowing ? theme.text : colors.white,
+                          cursor: "pointer",
+                          fontSize: 14,
+                          fontWeight: 600,
+                          minWidth: 140,
+                          opacity: followPending || profileLoading ? 0.6 : 1,
+                        }}
+                      >
+                        {isFollowing ? (
+                          <FiCheck size={18} />
+                        ) : (
+                          <FiUserPlus size={18} />
+                        )}
+                        <span>
+                          {followPending || profileLoading
+                            ? "Updating..."
+                            : isFollowing
+                              ? "Following"
+                              : "Follow"}
+                        </span>
+                      </button>
 
-                {activeTab === "saved" && (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      padding: spacing.xl,
-                    }}
-                  >
-                    <FiBookmark size={36} color={theme.subText} />
-                    <p
-                      style={{
-                        color: theme.subText,
-                        fontSize: 14,
-                        marginTop: spacing.md,
-                      }}
-                    >
-                      Saved posts will appear here
-                    </p>
-                  </div>
-                )}
+                      <button
+                        className="homescreen-profile-button"
+                        onClick={handleDonatePress}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: spacing.sm,
+                          padding: 12,
+                          borderRadius: radii.pill,
+                          border: `1px solid ${theme.border}`,
+                          backgroundColor: donateEnabled
+                            ? colors.peach
+                            : "transparent",
+                          color: donateEnabled ? colors.white : theme.text,
+                          cursor: "pointer",
+                          fontSize: 14,
+                          fontWeight: 600,
+                          minWidth: 140,
+                        }}
+                      >
+                        <FiGift size={18} />
+                        <span>Donate</span>
+                      </button>
 
-                {activeTab === "connections" && (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      padding: spacing.xl,
-                    }}
-                  >
-                    <FiUsers size={36} color={theme.subText} />
-                    <p
+                      <button
+                        className="homescreen-profile-button"
+                        onClick={handleMessagePress}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: spacing.sm,
+                          padding: 12,
+                          borderRadius: radii.pill,
+                          border: `1px solid ${theme.border}`,
+                          backgroundColor: "transparent",
+                          color: theme.text,
+                          cursor: "pointer",
+                          fontSize: 14,
+                          fontWeight: 600,
+                          minWidth: 140,
+                        }}
+                      >
+                        <FiMessageCircle size={18} />
+                        <span>Message</span>
+                      </button>
+                    </div>
+                    {/* Tabs Row */}
+                    <div
+                      className="homescreen-profile-tabs-row"
                       style={{
-                        color: theme.subText,
-                        fontSize: 14,
+                        display: "flex",
+                        alignItems: "center",
+                        //justifyContent: 'space-between'
+                        width: "100%",
+                        gap: spacing.xxl,
                         marginTop: spacing.md,
+                        borderBottomWidth: 1,
+                        borderBottomColor: theme.border,
+                        borderBottomStyle: "solid",
                       }}
                     >
-                      Connections will appear here
-                    </p>
+                      {TABS.map((tab) => {
+                        const focused = tab.key === activeTab;
+                        return (
+                          <button
+                            key={tab.key}
+                            className="homescreen-profile-tab-btn"
+                            onClick={() => setActiveTab(tab.key)}
+                            style={{
+                              flex: 1,
+                              alignItems: "center",
+                              paddingVertical: spacing.sm,
+                              cursor: "pointer",
+                              backgroundColor: "transparent",
+                              border: "none",
+                            }}
+                          >
+                            <span
+                              style={{
+                                color: focused ? theme.text : theme.subText,
+                                fontSize: 13,
+                                fontWeight: 600,
+                              }}
+                            >
+                              {tab.label}
+                            </span>
+                            {focused && (
+                              <div
+                                style={{
+                                  height: 3,
+                                  width: 92,
+                                  borderRadius: 2,
+                                  backgroundColor: colors.peach,
+                                  marginTop: spacing.xs,
+                                  marginLeft: 15
+                                }}
+                              />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
-              </div>
-            </>
-          )}
+                {/* Content Area */}
+                <div
+                  className="homescreen-profile-content"
+                  style={{
+                    flex: 1,
+                    paddingTop: spacing.lg,
+                  }}
+                >
+                  {activeTab === "media" && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        padding: spacing.xl,
+                      }}
+                    >
+                      <FiGrid size={36} color={theme.subText} />
+                      <p
+                        style={{
+                          color: theme.subText,
+                          fontSize: 14,
+                          marginTop: spacing.md,
+                        }}
+                      >
+                        Media content will appear here
+                      </p>
+                    </div>
+                  )}
+
+                  {activeTab === "reels" && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        padding: spacing.xl,
+                      }}
+                    >
+                      <FiFilm size={36} color={theme.subText} />
+                      <p
+                        style={{
+                          color: theme.subText,
+                          fontSize: 14,
+                          marginTop: spacing.md,
+                        }}
+                      >
+                        Reels will appear here
+                      </p>
+                    </div>
+                  )}
+
+                  {activeTab === "saved" && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        padding: spacing.xl,
+                      }}
+                    >
+                      <FiBookmark size={36} color={theme.subText} />
+                      <p
+                        style={{
+                          color: theme.subText,
+                          fontSize: 14,
+                          marginTop: spacing.md,
+                        }}
+                      >
+                        Saved posts will appear here
+                      </p>
+                    </div>
+                  )}
+
+                  {activeTab === "connections" && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        padding: spacing.xl,
+                      }}
+                    >
+                      <FiUsers size={36} color={theme.subText} />
+                      <p
+                        style={{
+                          color: theme.subText,
+                          fontSize: 14,
+                          marginTop: spacing.md,
+                        }}
+                      >
+                        Connections will appear here
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
       ) : (
@@ -1956,6 +2030,76 @@ export const NotificationsSidebarContent = ({ theme, onClose }) => {
 };
 
 export const ShopSidebarContent = ({ theme, onClose }) => {
+  const [activeTab, setActiveTab] = useState("digital");
+  const [auroGiveawayEnabled, setAuroGiveawayEnabled] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState("utilities");
+
+  // Popup state
+  const [showPreferences, setShowPreferences] = useState(false);
+  const [showRewardVoucher, setShowRewardVoucher] = useState(false);
+  const [showBecomeSeller, setShowBecomeSeller] = useState(false);
+  const [showDigitalCategory, setShowDigitalCategory] = useState(false);
+  const [region, setRegion] = useState("Both");
+  const [price, setPrice] = useState("Balanced");
+
+  // Digital subcategories
+  const utilitiesSubcategories = [
+    { id: "mobile_data", name: "Mobile Data", icon: "smartphone" },
+    { id: "esim", name: "eSIM", icon: "radio" },
+    { id: "gift_cards", name: "Gift Cards", icon: "gift" },
+    { id: "game_credits", name: "Game Vouchers", icon: "slack" },
+  ];
+
+  const servicesSubcategories = [
+    { id: "cv_design", name: "CV Design", icon: "file-text" },
+    { id: "ui_design", name: "UI Design", icon: "layout" },
+    { id: "house_plans", name: "House Plans", icon: "home" },
+    { id: "seller_cards", name: "Seller Cards", icon: "credit-card" },
+    { id: "tech_help", name: "Tech Help", icon: "help-circle" },
+  ];
+
+  const designsSubcategories = [
+    { id: "profile_pic", name: "Profile Pic", icon: "user" },
+    { id: "couple_drawing", name: "Couple Drawing", icon: "users" },
+    { id: "family_art", name: "Family Art", icon: "users" },
+    { id: "minimal_portrait", name: "Minimal Portrait", icon: "image" },
+    { id: "logo_mascot", name: "Logo & Mascot", icon: "aperture" },
+  ];
+
+  // compute current category info for popup (must come after arrays)
+  const categoryTitle = useMemo(() => {
+    if (selectedCategory === "utilities") return "Digital Utilities";
+    if (selectedCategory === "services") return "Digital Services";
+    if (selectedCategory === "designs") return "Custom Designs";
+    return "";
+  }, [selectedCategory]);
+
+  const categoryItems = useMemo(() => {
+    if (selectedCategory === "utilities") return utilitiesSubcategories;
+    if (selectedCategory === "services") return servicesSubcategories;
+    if (selectedCategory === "designs") return designsSubcategories;
+    return [];
+  }, [selectedCategory]);
+
+  const quickAccessItems = [
+    ...utilitiesSubcategories,
+    ...servicesSubcategories,
+    ...designsSubcategories,
+  ];
+
+  const handleReviewAuri = () => {
+    alert(
+      "Opening a public Review page at auri-green.vercel.app\n\nContact us if you have any questions!",
+    );
+    window.open("https://auri-green.vercel.app/reviews", "_blank");
+  };
+
+  const allSubcategories = useMemo(() => {
+    return utilitiesSubcategories
+      .concat(servicesSubcategories)
+      .concat(designsSubcategories);
+  }, []);
+
   return (
     <div className="homescreen-shop-container">
       <div className="homescreen-shop-header">
@@ -1968,29 +2112,679 @@ export const ShopSidebarContent = ({ theme, onClose }) => {
         <div className="homescreen-shop-spacer" />
       </div>
 
-      <div className="homescreen-shop-coming-soon">
-        <FiShoppingBag size={48} color={theme.subText} />
-        <p
-          className="homescreen-shop-coming-soon-text"
-          style={{ color: theme.text }}
+      <div
+        className="homescreen-shop-content"
+        style={{ padding: spacing.md, overflowY: "auto" }}
+      >
+        <style>{`
+          .homescreen-shop-content::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
+        {/* Tab Switcher Pill - Shop / Digital */}
+        <div
+          className="homescreen-shop-tab-switcher"
+          style={{
+            display: "flex",
+            backgroundColor: theme.card,
+            borderRadius: 24,
+            padding: 4,
+            marginBottom: spacing.lg,
+            border: `1px solid ${theme.border}`,
+          }}
         >
-          Shop is ready, a few sellers to open the experience!
-        </p>
-        <p
-          className="homescreen-shop-coming-soon-subtext"
-          style={{ color: theme.subText }}
-        >
-          We're looking for sellers so you can shop. Want to be a seller?{" "}
-          <a
-            href="https://auri-green.vercel.app"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: "#4D9CFF" }}
+          <button
+            onClick={() => setActiveTab("shop")}
+            style={{
+              flex: 1,
+              padding: spacing.sm,
+              borderRadius: 20,
+              border: "none",
+              backgroundColor:
+                activeTab === "shop" ? colors.peach : "transparent",
+              color: activeTab === "shop" ? colors.white : theme.text,
+              cursor: "pointer",
+              fontWeight: 600,
+              fontSize: 14,
+            }}
           >
-            Learn more here
-          </a>
-        </p>
+            Shop
+          </button>
+          <button
+            onClick={() => setActiveTab("digital")}
+            style={{
+              flex: 1,
+              padding: spacing.sm,
+              borderRadius: 20,
+              border: "none",
+              backgroundColor:
+                activeTab === "digital" ? colors.peach : "transparent",
+              color: activeTab === "digital" ? colors.white : theme.text,
+              cursor: "pointer",
+              fontWeight: 600,
+              fontSize: 14,
+            }}
+          >
+            Digital
+          </button>
+        </div>
+
+        {activeTab === "shop" ? (
+          /* SHOP TAB - Physical Products (Placeholder) */
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              paddingVertical: spacing.xxl * 2,
+            }}
+          >
+            <FiShoppingBag size={56} color={colors.peach} />
+            <p
+              style={{
+                color: theme.text,
+                marginTop: spacing.md,
+                fontSize: 18,
+                fontWeight: "600",
+              }}
+            >
+              This section is being workshopped
+            </p>
+            <p
+              style={{
+                color: theme.subText,
+                marginTop: spacing.sm,
+                textAlign: "center",
+              }}
+            >
+              We're preparing something special for you
+            </p>
+          </div>
+        ) : (
+          /* DIGITAL TAB - Auri Mini - Digital Products */
+          <div className="homescreen-shop-digital-content">
+            {/* Auri Mini Hero Section */}
+            <div
+              className="homescreen-shop-digital-hero"
+              style={{
+                background:
+                  "linear-gradient(135deg, #6366F1, #8B5CF6, #A855F7)",
+                borderRadius: 16,
+                padding: spacing.lg,
+                marginBottom: spacing.lg,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <div>
+                <h3
+                  style={{
+                    color: colors.white,
+                    fontSize: 22,
+                    fontWeight: 700,
+                    marginBottom: 4,
+                  }}
+                >
+                  Auri Mini
+                </h3>
+                <p style={{ color: "rgba(255,255,255,0.8)", fontSize: 13 }}>
+                  Digital Marketplace • Sell & Buy
+                </p>
+              </div>
+              <div
+                style={{
+                  backgroundColor: "rgba(255,255,255,0.2)",
+                  borderRadius: 12,
+                  padding: spacing.sm,
+                }}
+              >
+                <FiZap size={40} color={colors.white} />
+              </div>
+            </div>
+
+            {/* Auro Giveaway Section - Free Items */}
+            <div
+              className="homescreen-shop-auro-giveaway"
+              style={{
+                backgroundColor: theme.card,
+                borderRadius: 12,
+                padding: spacing.md,
+                marginBottom: spacing.lg,
+                border: `1px solid ${theme.border}`,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                }}
+              >
+                <div style={{ display: "flex", gap: spacing.sm }}>
+                  <div
+                    style={{
+                      backgroundColor: `${colors.peach}20`,
+                      borderRadius: 10,
+                      padding: spacing.sm,
+                    }}
+                  >
+                    <FiGift size={20} color={colors.peach} />
+                  </div>
+                  <div>
+                    <p
+                      style={{
+                        color: theme.text,
+                        fontWeight: 600,
+                        fontSize: 15,
+                      }}
+                    >
+                      Auri Giveaway
+                    </p>
+                    <p style={{ color: theme.subText, fontSize: 12 }}>
+                      Free items - Auri picks for you
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    if (!auroGiveawayEnabled) {
+                      alert(
+                        "Auro Giveaway\n\nAuri will pick free items for you! You'll receive randomly selected free digital products. Toggle off if you don't want to receive free items.",
+                      );
+                      setAuroGiveawayEnabled(true);
+                    } else {
+                      setAuroGiveawayEnabled(false);
+                    }
+                  }}
+                  style={{
+                    backgroundColor: auroGiveawayEnabled
+                      ? colors.peach
+                      : "transparent",
+                    border: `1px solid ${theme.border}`,
+                    borderRadius: 20,
+                    padding: "6px 12px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
+                  {auroGiveawayEnabled ? (
+                    <FiBell size={16} color={colors.white} />
+                  ) : (
+                    <FiBellOff size={16} color={theme.subText} />
+                  )}
+                </button>
+              </div>
+              {auroGiveawayEnabled && (
+                <div
+                  style={{
+                    backgroundColor: `${colors.peach}15`,
+                    borderRadius: 8,
+                    padding: spacing.sm,
+                    marginTop: spacing.sm,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: spacing.xs,
+                  }}
+                >
+                  <FiCheck size={14} color={colors.peach} />
+                  <span style={{ color: colors.peach, fontSize: 12 }}>
+                    Enabled - Auri will notify you of free items
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Quick Actions Row */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: spacing.sm,
+                marginBottom: spacing.lg,
+              }}
+            >
+              {/* Preferences Button
+              <button
+                onClick={() => setShowPreferences(true)}
+                style={{
+                  backgroundColor: theme.card,
+                  border: `1px solid ${theme.border}`,
+                  borderRadius: 12,
+                  padding: spacing.md,
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: spacing.xs,
+                }}
+              >
+                <div style={{
+                  backgroundColor: `${colors.peach}20`,
+                  borderRadius: 10,
+                  padding: spacing.sm,
+                }}>
+                  <FiTool size={22} color={colors.peach} />
+                </div>
+                <span style={{ color: theme.text, fontSize: 11, fontWeight: 500, textAlign: "center" }}>
+                  Preferences
+                </span>
+              </button>
+              */}
+
+              {/* Reward Vouchers Button */}
+              <button
+                onClick={() => setShowRewardVoucher(true)}
+                style={{
+                  backgroundColor: theme.card,
+                  border: `1px solid ${theme.border}`,
+                  borderRadius: 12,
+                  padding: spacing.md,
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: spacing.xs,
+                }}
+              >
+                <div
+                  style={{
+                    backgroundColor: `${colors.peach}20`,
+                    borderRadius: 10,
+                    padding: spacing.sm,
+                  }}
+                >
+                  <FiGift size={22} color={colors.peach} />
+                </div>
+                <span
+                  style={{
+                    color: theme.text,
+                    fontSize: 11,
+                    fontWeight: 500,
+                    textAlign: "center",
+                  }}
+                >
+                  Reward
+                  <br />
+                  Vouchers
+                </span>
+              </button>
+
+              {/* Become Seller Button */}
+              <button
+                onClick={() => setShowBecomeSeller(true)}
+                style={{
+                  backgroundColor: theme.card,
+                  border: `1px solid ${theme.border}`,
+                  borderRadius: 12,
+                  padding: spacing.md,
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: spacing.xs,
+                }}
+              >
+                <div
+                  style={{
+                    backgroundColor: `${colors.peach}20`,
+                    borderRadius: 10,
+                    padding: spacing.sm,
+                  }}
+                >
+                  <FiShoppingBag size={22} color={colors.peach} />
+                </div>
+                <span
+                  style={{
+                    color: theme.text,
+                    fontSize: 11,
+                    fontWeight: 500,
+                    textAlign: "center",
+                  }}
+                >
+                  Become
+                  <br />
+                  Seller
+                </span>
+              </button>
+
+              {/* Review Auri Button */}
+              <button
+                onClick={handleReviewAuri}
+                style={{
+                  backgroundColor: theme.card,
+                  border: `1px solid ${theme.border}`,
+                  borderRadius: 12,
+                  padding: spacing.md,
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: spacing.xs,
+                }}
+              >
+                <div
+                  style={{
+                    backgroundColor: `${colors.peach}20`,
+                    borderRadius: 10,
+                    padding: spacing.sm,
+                  }}
+                >
+                  <FiExternalLink size={22} color={colors.peach} />
+                </div>
+                <span
+                  style={{
+                    color: theme.text,
+                    fontSize: 11,
+                    fontWeight: 500,
+                    textAlign: "center",
+                  }}
+                >
+                  Review
+                  <br />
+                  Auri
+                </span>
+              </button>
+            </div>
+
+            {/* Digital Categories - Beautiful Cards */}
+            <div style={{ marginBottom: spacing.lg }}>
+              <p
+                style={{
+                  color: theme.text,
+                  fontWeight: 600,
+                  fontSize: 16,
+                  marginBottom: spacing.sm,
+                }}
+              >
+                Browse Categories
+              </p>
+
+              {/* Utilities - Gradient Card */}
+              <button
+                onClick={() => {
+                  setSelectedCategory("utilities");
+                  setShowDigitalCategory(true);
+                }}
+                style={{
+                  width: "100%",
+                  background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
+                  border: "none",
+                  borderRadius: 12,
+                  padding: spacing.md,
+                  marginBottom: spacing.sm,
+                  cursor: "pointer",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    gap: spacing.sm,
+                    alignItems: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      backgroundColor: "rgba(255,255,255,0.2)",
+                      borderRadius: 8,
+                      padding: spacing.xs,
+                    }}
+                  >
+                    <FiSmartphone size={28} color={colors.white} />
+                  </div>
+                  <div style={{ textAlign: "left" }}>
+                    <p
+                      style={{
+                        color: colors.white,
+                        fontWeight: 600,
+                        fontSize: 15,
+                      }}
+                    >
+                      Digital Utilities
+                    </p>
+                    <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 11 }}>
+                      Mobile Data • eSIM • Gift Cards
+                    </p>
+                  </div>
+                </div>
+                <FiChevronRight size={20} color={colors.white} />
+              </button>
+
+              {/* Services - Gradient Card */}
+              <button
+                onClick={() => {
+                  setSelectedCategory("services");
+                  setShowDigitalCategory(true);
+                }}
+                style={{
+                  width: "100%",
+                  background: "linear-gradient(135deg, #10B981, #059669)",
+                  border: "none",
+                  borderRadius: 12,
+                  padding: spacing.md,
+                  marginBottom: spacing.sm,
+                  cursor: "pointer",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    gap: spacing.sm,
+                    alignItems: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      backgroundColor: "rgba(255,255,255,0.2)",
+                      borderRadius: 8,
+                      padding: spacing.xs,
+                    }}
+                  >
+                    <FiTool size={28} color={colors.white} />
+                  </div>
+                  <div style={{ textAlign: "left" }}>
+                    <p
+                      style={{
+                        color: colors.white,
+                        fontWeight: 600,
+                        fontSize: 15,
+                      }}
+                    >
+                      Digital Services
+                    </p>
+                    <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 11 }}>
+                      CV Design • UI Design • House Plans
+                    </p>
+                  </div>
+                </div>
+                <FiChevronRight size={20} color={colors.white} />
+              </button>
+
+              {/* Designs - Gradient Card */}
+              <button
+                onClick={() => {
+                  setSelectedCategory("designs");
+                  setShowDigitalCategory(true);
+                }}
+                style={{
+                  width: "100%",
+                  background: "linear-gradient(135deg, #F59E0B, #D97706)",
+                  border: "none",
+                  borderRadius: 12,
+                  padding: spacing.md,
+                  marginBottom: spacing.sm,
+                  cursor: "pointer",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    gap: spacing.sm,
+                    alignItems: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      backgroundColor: "rgba(255,255,255,0.2)",
+                      borderRadius: 8,
+                      padding: spacing.xs,
+                    }}
+                  >
+                    <FiEdit3 size={28} color={colors.white} />
+                  </div>
+                  <div style={{ textAlign: "left" }}>
+                    <p
+                      style={{
+                        color: colors.white,
+                        fontWeight: 600,
+                        fontSize: 15,
+                      }}
+                    >
+                      Custom Designs
+                    </p>
+                    <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 11 }}>
+                      Portraits • Logos • Illustrations
+                    </p>
+                  </div>
+                </div>
+                <FiChevronRight size={20} color={colors.white} />
+              </button>
+            </div>
+
+            {/* Quick Access Grid */}
+            <div>
+              <p
+                style={{
+                  color: theme.text,
+                  fontWeight: 600,
+                  fontSize: 16,
+                  marginBottom: spacing.sm,
+                }}
+              >
+                Quick Access
+              </p>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, 1fr)",
+                  gap: spacing.sm,
+                }}
+              >
+                {quickAccessItems.map((sub) => (
+                  <button
+                    key={sub.id}
+                    onClick={() => alert(`${sub.name} - Coming soon!`)}
+                    style={{
+                      backgroundColor: theme.card,
+                      border: `1px solid ${theme.border}`,
+                      borderRadius: 12,
+                      padding: spacing.sm,
+                      cursor: "pointer",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: spacing.xs,
+                    }}
+                  >
+                    <div
+                      style={{
+                        backgroundColor: `${colors.peach}15`,
+                        borderRadius: 8,
+                        padding: spacing.xs,
+                      }}
+                    >
+                      {sub.icon === "smartphone" && (
+                        <FiSmartphone size={18} color={colors.peach} />
+                      )}
+                      {sub.icon === "radio" && (
+                        <FiPlay size={18} color={colors.peach} />
+                      )}
+                      {sub.icon === "gift" && (
+                        <FiGift size={18} color={colors.peach} />
+                      )}
+                      {sub.icon === "slack" && (
+                        <FiPlay size={18} color={colors.peach} />
+                      )}
+                      {sub.icon === "file-text" && (
+                        <FiGrid size={18} color={colors.peach} />
+                      )}
+                      {sub.icon === "layout" && (
+                        <FiGrid size={18} color={colors.peach} />
+                      )}
+                      {sub.icon === "home" && (
+                        <FiGrid size={18} color={colors.peach} />
+                      )}
+                      {sub.icon === "credit-card" && (
+                        <FiGrid size={18} color={colors.peach} />
+                      )}
+                      {sub.icon === "help-circle" && (
+                        <FiGrid size={18} color={colors.peach} />
+                      )}
+                      {sub.icon === "user" && (
+                        <FiGrid size={18} color={colors.peach} />
+                      )}
+                      {sub.icon === "users" && (
+                        <FiUsers size={18} color={colors.peach} />
+                      )}
+                      {sub.icon === "image" && (
+                        <FiGrid size={18} color={colors.peach} />
+                      )}
+                      {sub.icon === "aperture" && (
+                        <FiGrid size={18} color={colors.peach} />
+                      )}
+                    </div>
+                    <span
+                      style={{
+                        color: theme.text,
+                        fontSize: 10,
+                        textAlign: "center",
+                      }}
+                    >
+                      {sub.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* popups */}
+      <PreferencesPopup
+        showPreferences={showPreferences}
+        setShowPreferences={setShowPreferences}
+        region={region}
+        setRegion={setRegion}
+        price={price}
+        setPrice={setPrice}
+      />
+      <RewardVoucherPopup
+        showRewardVoucher={showRewardVoucher}
+        setShowRewardVoucher={setShowRewardVoucher}
+      />
+      <BecomeSellerPopup
+        showBecomeSeller={showBecomeSeller}
+        setShowBecomeSeller={setShowBecomeSeller}
+      />
+      <DigitalCategoryPopup
+        showDigitalCategory={showDigitalCategory}
+        setShowDigitalCategory={setShowDigitalCategory}
+        categoryTitle={categoryTitle}
+        categoryItems={categoryItems}
+      />
     </div>
   );
 };

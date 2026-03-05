@@ -12,6 +12,7 @@ import {
   FiPlay,
   FiMapPin,
   FiShare2,
+  FiSlack
 } from "react-icons/fi";
 import { MdVerified } from "react-icons/md"
 import { Avatar } from "../../components/Avatar";
@@ -22,6 +23,8 @@ import { spacing, colors } from "../../theme/tokens";
 import { EditProfileSidebarContent } from "./EditProfileSidebarContent";
 import { StoreCenterSidebarContent } from "./StoreCenterSidebarContent";
 import { SettingsSidebarContent } from "./SettingsSidebarContent";
+import { GamesSidebarContent } from "./GamesSidebarContent";
+import { PostDetailSidebarContent } from "./PostDetailSidebarContent";
 import "./ProfileScreen.css";
 // Import API functions
 import { getUserById } from "../../lib/usersApi";
@@ -109,6 +112,9 @@ export const ProfileScreen = () => {
     darkMode: true,
     privacy: "friends",
   });
+
+  // Post Detail State
+  const [selectedPost, setSelectedPost] = useState(null);
 
   const isOwnProfile = viewedUserId === authUserId;
   const availableTabs = useMemo(() => {
@@ -347,6 +353,20 @@ export const ProfileScreen = () => {
     setActiveSidebar((prev) => (prev === "store" ? null : "store"));
   }, []);
 
+  const handleGamesPress = useCallback(() => {
+    setActiveSidebar((prev) => (prev === "games" ? null : "games"));
+  }, []);
+
+  const handlePostClick = useCallback((post) => {
+    setSelectedPost(post);
+    setActiveSidebar("postDetail");
+  }, []);
+
+  const handlePostDetailClose = useCallback(() => {
+    setActiveSidebar(null);
+    setSelectedPost(null);
+  }, []);
+
   const handleSharePress = useCallback(async () => {
     const shareUrl = `${window.location.origin}/u/${authUserId}`;
     const shareText = `Check out my profile on Auri 🌿\n${shareUrl}`;
@@ -485,7 +505,13 @@ export const ProfileScreen = () => {
 
             return (
               <div key={post.id} className="profile-grid-item">
-                <img src={cover} alt="" className="profile-grid-image" />
+                <img 
+                  src={cover} 
+                  alt="" 
+                  className="profile-grid-image" 
+                  onClick={() => handlePostClick(post)}
+                  style={{ cursor: "pointer" }}
+                />
               </div>
             );
           })}
@@ -503,6 +529,7 @@ export const ProfileScreen = () => {
     loadingPosts,
     profilePosts,
     theme.subText,
+    handlePostClick,
   ]);
 
   const renderSidebarContent = () => {
@@ -563,10 +590,25 @@ export const ProfileScreen = () => {
             }
           />
         );
+      case "games":
+        return (
+          <GamesSidebarContent theme={theme} onClose={closeSidebar} />
+        );
+      case "postDetail":
+        return (
+          <PostDetailSidebarContent
+            theme={theme}
+            onClose={handlePostDetailClose}
+            post={selectedPost}
+            user={viewedUser}
+          />
+        );
       default:
         return null;
     }
   };
+
+  // onClick={handleSharePress} <- to share user profile
 
   return (
     <div
@@ -675,13 +717,14 @@ export const ProfileScreen = () => {
               <span style={{ color: theme.text }}>Store Center</span>
             </button>
 
-            {/*<button
-              className="profile-secondary-button"
-              onClick={handleSharePress}
+            <button
+              className="profile-primary-button"
+              onClick={handleGamesPress}
+              style={{ backgroundColor: colors.peach }}
             >
-              <FiShare2 size={18} color={theme.text} />
-              <span style={{ color: theme.text }}>Share</span>
-            </button>*/}
+              <FiSlack size={18} color={colors.white} />
+              <span style={{ color: colors.white }}>Mini Games</span>
+            </button>
           </div>
 
           {/* Interests */}

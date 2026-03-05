@@ -222,7 +222,7 @@ export const EditProfileSidebarContent = ({
             fontSize: 14,
           }}
         >
-          Status
+          Quick Bio
         </label>
         <input
           type="text"
@@ -252,7 +252,7 @@ export const EditProfileSidebarContent = ({
             fontSize: 14,
           }}
         >
-          Website
+          Website or Social Link
         </label>
         <input
           type="text"

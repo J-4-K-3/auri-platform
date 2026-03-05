@@ -29,6 +29,7 @@ import {
   FiCheck,
   FiExternalLink,
   FiArrowRight,
+  FiX
 } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -52,7 +53,7 @@ const THEMES = [
   { value: "dark", label: "Dark" },
   { value: "amoled", label: "AMOLED" },
   { value: "blush", label: "Blush" },
-  { value: "purple", label: "Purple" },
+  { value: "mint", label: "Mint" },
 ];
 
 // Reusable Row Component
@@ -1347,6 +1348,26 @@ const AccountTwoFactorContent = () => {
 // Account Payments Content
 const AccountPaymentsContent = () => {
   const theme = useAppTheme();
+
+  // base row style with theme adjustments
+  const rowStyle = {
+    ...styles.paymentRow,
+    backgroundColor: theme.card,
+    borderRadius: "12px",
+    padding: "8px 16px",
+    borderBottom: "none",
+    gap: "8px", // tighten space between icon and text
+    transition: "background 0.2s",
+  };
+
+  const iconStyle = {
+    ...styles.paymentIcon,
+    borderRadius: "8px",
+    overflow: "hidden",
+  };
+
+  const hoverColor = theme.border;
+
   return (
     <div style={styles.subBlock}>
       <span
@@ -1364,89 +1385,69 @@ const AccountPaymentsContent = () => {
       >
         Save your preferred payment methods for quick checkout.
       </p>
-      <div style={styles.paymentRow}>
+
+      {[
+        {
+          name: "GCash",
+          desc: "Southern Asia mobile wallet",
+          bg: "#006FEB",
+          logo:
+            "https://th.bing.com/th/id/OIP.rL_QkyaEfKgyIBpGTEgq9QAAAA?w=187&h=187&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3",
+        },
+        {
+          name: "PayPal",
+          desc: "Global payment platform",
+          bg: "#003087",
+          logo:
+            "https://th.bing.com/th/id/OIP.FtLN4CiwV6jwnXMfIDGS2QHaHa?w=177&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3",
+        },
+        {
+          name: "Credit/Debit Cards",
+          desc: "Visa, Mastercard, etc.",
+          bg: "#1A1F71",
+          logo:
+            "https://th.bing.com/th/id/OIP.E6olZ2NeGRb1qmT0uLTp5AHaHa?w=179&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3",
+        },
+      ].map((method) => (
         <div
-          style={{
-            ...styles.paymentIcon,
-            backgroundColor: "#006FEB",
-            borderRadius: "8px",
-          }}
+          key={method.name}
+          style={rowStyle}
+          onMouseEnter={(e) =>
+            e.currentTarget.style.backgroundColor = hoverColor
+          }
+          onMouseLeave={(e) =>
+            e.currentTarget.style.backgroundColor = rowStyle.backgroundColor
+          }
         >
-          <span
-            style={{ color: "white", fontWeight: "bold", fontSize: "12px" }}
-          >
-            GC
-          </span>
-        </div>
-        <div style={{ flex: 1 }}>
-          <span style={{ ...styles.label, color: theme.text }}>GCash</span>
-          <span
+          <div
             style={{
-              ...styles.subText,
-              color: theme.subText,
-              display: "block",
+              ...iconStyle,
+              backgroundColor: method.bg,
             }}
           >
-            Southern Asia mobile wallet
-          </span>
+            <img
+              src={method.logo}
+              alt={method.name}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          </div>
+          <div style={{ flex: 1 }}>
+            <span style={{ ...styles.label, color: theme.text, marginBottom: "2px" }}>
+              {method.name}
+            </span>
+            <span
+              style={{
+                ...styles.subText,
+                color: theme.subText,
+                display: "block",
+                lineHeight: "16px",
+              }}
+            >
+              {method.desc}
+            </span>
+          </div>
         </div>
-      </div>
-      <div style={styles.paymentRow}>
-        <div
-          style={{
-            ...styles.paymentIcon,
-            backgroundColor: "#003087",
-            borderRadius: "8px",
-          }}
-        >
-          <span
-            style={{ color: "white", fontWeight: "bold", fontSize: "10px" }}
-          >
-            PayPal
-          </span>
-        </div>
-        <div style={{ flex: 1 }}>
-          <span style={{ ...styles.label, color: theme.text }}>PayPal</span>
-          <span
-            style={{
-              ...styles.subText,
-              color: theme.subText,
-              display: "block",
-            }}
-          >
-            Global payment platform
-          </span>
-        </div>
-      </div>
-      <div style={styles.paymentRow}>
-        <div
-          style={{
-            ...styles.paymentIcon,
-            backgroundColor: "#1A1F71",
-            borderRadius: "8px",
-          }}
-        >
-          <span
-            style={{ color: "white", fontWeight: "bold", fontSize: "10px" }}
-          >
-            VISA
-          </span>
-        </div>
-        <div style={{ flex: 1 }}>
-          <span style={{ ...styles.label, color: theme.text }}>
-            Credit/Debit Cards
-          </span>
-          <span
-            style={{
-              ...styles.subText,
-              color: theme.subText,
-              display: "block",
-            }}
-          >
-            Visa, Mastercard, etc.
-          </span>
-        </div>
-      </div>
+      ))}
     </div>
   );
 };
@@ -2496,7 +2497,7 @@ export const SettingsSidebarContent = ({
           onClick={handleBack}
           style={styles.backButton}
         >
-          <FiChevronLeft size={24} color={appTheme.text} />
+          <FiX size={24} color={appTheme.text} />
         </button>
         <h2
           style={{

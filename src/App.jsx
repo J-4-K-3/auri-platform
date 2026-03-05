@@ -16,6 +16,7 @@ import PublicProfileScreen from "../src/screen/profile/PublicProfileScreen";
 import PublicPostScreen from "../src/screen/home/PublicPostScreen";
 import { FloatingNav } from "../src/components/FloatingNav";
 import { useAppTheme } from './theme';
+import { Helmet } from 'react-helmet';
 import './App.css'
 
 function AppContent() {
@@ -79,9 +80,38 @@ function AppContent() {
 
 export default function App() {
   return (
-    <PersistGate loading={<SplashScreen />} persistor={persistor}>
-      <AppContent />
-    </PersistGate>
+    <>
+      {/* SEO & share metadata */}
+      <Helmet>
+        <title>Auri Platform</title>
+        <meta name="description" content="Auri Platform" />
+        <meta name="keywords" content="social, chat, moments, reels, games, Auri, Auri Platform, apps, media, new app" />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://auri-platform.vercel.app/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Auri Platform" />
+        <meta property="og:description" content="Auri Platform" />
+        <meta property="og:url" content="https://auri-platform.vercel.app/" />
+        <meta property="og:image" content="https://fra.cloud.appwrite.io/v1/storage/buckets/68d7fd750014343acda8/files/6934a338000ec353cfce/view?project=68d7f6bb000b001fe1e7&mode=admin" />
+        <meta property="og:image:alt" content="Auri Logo" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Auri Platform" />
+        <meta name="twitter:description" content="Auri Platform" />
+        <meta name="twitter:image" content="https://fra.cloud.appwrite.io/v1/storage/buckets/68d7fd750014343acda8/files/6934a338000ec353cfce/view?project=68d7f6bb000b001fe1e7&mode=admin" />
+        {/* basic schema.org JSON‑LD */}
+        <script type="application/ld+json">{`{
+          "@context": "http://schema.org",
+          "@type": "WebSite",
+          "name": "Auri Platform",
+          "url": "https://auri-platform.vercel.app/",
+          "logo": "https://fra.cloud.appwrite.io/v1/storage/buckets/68d7fd750014343acda8/files/6934a338000ec353cfce/view?project=68d7f6bb000b001fe1e7&mode=admin",
+          "description": "Auri Platform"
+        }`}</script>
+      </Helmet>
+      <PersistGate loading={<SplashScreen />} persistor={persistor}>
+        <AppContent />
+      </PersistGate>
+    </>
   );
 }
 

@@ -101,14 +101,14 @@ export const blushTheme = {
   navBar: '#f9e3ecff',
 };
 
-export const purpleTheme = {
-  background: '#2A1F3D', // deep purple base
-  card: '#3A2E52', // slightly lighter purple for card contrast
-  text: '#E8D5F2', // soft lavender white
-  subText: 'rgba(232, 213, 242, 0.72)', // readable but subtle
-  border: 'rgba(232, 213, 242, 0.15)', // refined purple borders
+export const mintTheme = {
+  background: '#1E3D3D',   // deep teal
+  card: '#2E5C5C',         // lighter teal for cards
+  text: '#DFF6F0',         // soft minty text
+  subText: 'rgba(223, 246, 240, 0.64)',
+  border: 'rgba(223, 246, 240, 0.15)',
   statusBar: 'light',
-  navBar: '#2A1F3D',
+  navBar: '#1E3D3D',
 };
 
 export const themeModeMap = {
@@ -116,5 +116,5 @@ export const themeModeMap = {
   dark: darkTheme,
   amoled: amoledTheme,
   blush: blushTheme,
-  purple: purpleTheme,
+  mint: mintTheme,
 };
